@@ -25,12 +25,16 @@ int nor;
 int nob;
 int noc;
 struct node tob[max]; // total no. of bids
-vector< vector<int> > company_bid_list; 
+
+vector< vector<int> > company_bid_list; //stores all the bids corresponding to a company
+
 bool com[max],reg[max]; //keeps record of which companies and regions can be selected in the remaining unprocessed bids
 bool bid[max]; // final bids
+
 vector<int> region_bid_index;
-vector<int> company_bid_considered;
+vector<int> company_bid_considered;//stores the bid id of the considered bid for each company in the current state
 vector<int> unallotted_regions_list;
+
 void readFile()
 {
 	string g;
@@ -88,12 +92,13 @@ void readFile()
 			ch1[j]='\0';
 			tob[i].region[qq]=atoi(ch1);
 		}
-		sort(tob[i].region,tob[i].region+x);
+		sort(tob[i].region,tob[i].region+x);//sorting the region ids in increasing order of index
 		getline(cin,g);	
 	}
 }
 void make_company_bid_list()
 {
+	//builds the company_bid_list
 	company_bid_list.resize( noc , vector<int>( 0 , -100 ));
 	for(int i=0;i<nob;i++)
 	{
@@ -153,7 +158,7 @@ void make_random_start_state()
 		// }
 		// cout<<endl;
 		vector<int> compatible_bids_of_this_company;
-		int num_of_bids_of_company =company_bid_list[i].size();
+		int num_of_bids_of_company = company_bid_list[i].size();
 		for(int j=0;j<num_of_bids_of_company;j++)
 		{
 			//converting that array into vector
