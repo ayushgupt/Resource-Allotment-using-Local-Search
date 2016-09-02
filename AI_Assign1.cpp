@@ -35,6 +35,12 @@ vector<int> region_bid_index;
 vector<int> company_bid_considered;//stores the bid id of the considered bid for each company in the current state
 vector<int> unallotted_regions_list;
 
+
+
+vector< vector<int> > region_bid_index_neighbours;
+vector< vector<int> > company_bid_considered_neighbours;
+vector< vector<int> > unallotted_regions_list_neighbours;
+
 void readFile()
 {
 	string g;
@@ -117,6 +123,15 @@ void print_company_bid_lists()
 		cout<<endl;
 	}
 }
+void neigh_add_bid(int neigh_id,int bid_id)
+{
+	company_bid_considered_neighbours[neigh_id][ tob[bid_id].cid ] = bid_id;
+
+	for(int i=0;i<tob[bid_id].norc;i++)
+	{
+		region_bid_index_neighbours[neigh_id][ tob[bid_id].region[i] ]= bid_id;
+	} 
+}
 void add_bid(int bid_id)
 {
 	company_bid_considered[ tob[bid_id].cid ] = bid_id;
@@ -125,7 +140,14 @@ void add_bid(int bid_id)
 	{
 		region_bid_index[ tob[bid_id].region[i] ]= bid_id;
 	} 
-
+}
+void neigh_remove_bid(int neigh_id,int bid_id)
+{
+	company_bid_considered_neighbours[neigh_id][ tob[bid_id].cid ] = -1;
+	for(int i=0;i<tob[bid_id].norc;i++)
+	{
+		region_bid_index_neighbours[neigh_id][ tob[bid_id].region[i] ]= -1;
+	}
 }
 void remove_bid(int bid_id)
 {
@@ -133,6 +155,17 @@ void remove_bid(int bid_id)
 	for(int i=0;i<tob[bid_id].norc;i++)
 	{
 		region_bid_index[ tob[bid_id].region[i] ]= -1;
+	}
+}
+void neigh_update_unallotted_regions_list(int neigh_id)
+{
+	unallotted_regions_list_neighbours[neigh_id].resize(0);
+	for(int i=0;i<nor;i++)
+	{
+		if(region_bid_index_neighbours[neigh_id][i]==-1)
+		{
+			unallotted_regions_list_neighbours.push_back(i);
+		}
 	}
 }
 void update_unallotted_regions_list()
@@ -210,7 +243,6 @@ void make_random_start_state()
 		}
 		
 	}
-
 }
 
 void print_random_start_state()
@@ -220,6 +252,91 @@ void print_random_start_state()
 		cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered[i]<<endl;
 	}
 }
+void make_all_the_neighbouring_states()
+{
+	for(int i=0;i<noc;i++)
+	{
+		int bids_of_this_company=company_bid_list[i].size();
+		for(int j=0;j<bids_of_this_company;j++)
+		{
+			if(company_bid_list[i][j]!=company_bid_considered[i])
+			{
+				//BID INDEX to be added : company_bid_list[i][j]
+				int neighbour_number=region_bid_index_neighbours.size();
+				region_bid_index_neighbours.push_back(region_bid_index);
+				company_bid_considered_neighbours.push_back(company_bid_considered);
+				unallotted_regions_list_neighbours.push_back(unallotted_regions_list);
+				//Remove the currently considered bid of the company if there is any
+				if(company_bid_considered_neighbours[neighbour_number][i]!=-1)
+				{
+					neigh_remove_bid(neighbour_number,company_bid_considered_neighbours[neighbour_number][i]);
+				}
+				//Remove all the conflicting bids that have been considered now
+				vector<int> conflicting_bids;
+				for(int k=0;k<tob[company_bid_list[i][j]].norc;k++)
+				{
+					conflicting_bids.push_back(region_bid_index_neighbours[neighbour_number][ tob[ company_bid_list[i][j] ].region[k] ]);
+				}
+				sort( conflicting_bids.begin(), conflicting_bids.end() );
+				conflicting_bids.erase( unique( conflicting_bids.begin(), conflicting_bids.end() ), conflicting_bids.end() );
+				for(int k=0;k<conflicting_bids.size();k++)
+				{
+					neigh_remove_bid(neighbour_number,conflicting_bids[k]);
+				}
+				//Add the bid of this company
+				neigh_add_bid(neighbour_number,company_bid_list[i][j]);
+				//Add the best possible of the remaining bids
+				neigh_update_unallotted_regions_list(neighbour_number);
+				//Unallocated regions list : unallotted_regions_list_neighbours[neighbour_number]
+				vector<int> left_out_companies;
+				for(int k=0;k<noc;k++)
+				{
+					if(company_bid_considered_neighbours[neighbour_number][k]==-1)
+					{
+						left_out_companies.push_back(k);
+					}
+				}
+				vector<int> compatible_bids;
+				for(int k=0;k<left_out_companies.size();k++)
+				{
+					for(int t=0;t<company_bid_list[left_out_companies[k]].size(); t++ )
+					{
+						bool compatible =true;
+
+						vector<int> bid_region_vector((tob[ company_bid_list[left_out_companies[k]][t] ].region), (tob[ company_bid_list[left_out_companies[k]][t] ].region)+(tob[ company_bid_list[left_out_companies[k]][t] ].norc));
+
+						vector<int> intersection_vector = vector<int> (intersection_dummy_vector, set_intersection( all(bid_region_vector), all(unallotted_regions_list_neighbours[neighbour_number]), intersection_dummy_vector ));
+						
+						int bid_region_size=bid_region_vector.size();
+						if(intersection_vector.size()!=bid_region_vector.size())
+						{
+							compatible=false;
+						}
+						else
+						{
+							for(int k=0;k<bid_region_size;k++)
+							{
+								if(intersection_vector[k]!=bid_region_vector[k])
+								{
+									compatible=false;
+									break;
+								}
+							}
+						}
+
+						if(compatible)
+						{
+							compatible_bids.push_back(company_bid_list[left_out_companies[k]][t]);
+						}
+
+					}
+				}
+				
+			}
+		}
+	}
+}
+
 int main()
 {
 	readFile();
@@ -227,5 +344,6 @@ int main()
 	print_company_bid_lists();
 	make_random_start_state();
 	print_random_start_state();
+	make_all_the_neighbouring_states();
 	return 0;
 }
