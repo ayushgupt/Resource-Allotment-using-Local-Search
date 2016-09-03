@@ -31,9 +31,14 @@ vector< vector<int> > company_bid_list; //stores all the bids corresponding to a
 bool com[max],reg[max]; //keeps record of which companies and regions can be selected in the remaining unprocessed bids
 bool bid[max]; // final bids
 
-vector<int> region_bid_index;
+vector<int> region_bid_index; //stores the bid id of the considered bid for each region in the current state
 vector<int> company_bid_considered;//stores the bid id of the considered bid for each company in the current state
 vector<int> unallotted_regions_list;
+
+//state variables for the maximum valued neighbour
+vector<int> region_bid_index_max;
+vector<int> company_bid_considered_max;
+vector<int> unallotted_regions_list_max;
 
 
 
@@ -164,7 +169,7 @@ void neigh_update_unallotted_regions_list(int neigh_id)
 	{
 		if(region_bid_index_neighbours[neigh_id][i]==-1)
 		{
-			unallotted_regions_list_neighbours.push_back(i);
+			unallotted_regions_list_neighbours[neigh_id].push_back(i);
 		}
 	}
 }
@@ -252,6 +257,18 @@ void print_random_start_state()
 		cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered[i]<<endl;
 	}
 }
+//method to compute profit in current state
+double profit_current_state()
+{
+	double profit = 0.0;
+	for(int i=0;i<noc;i++)
+	{
+		if(company_bid_considered[i]!=-1)
+		profit+= tob[company_bid_considered[i]].price;	
+	}
+	return profit;
+}
+
 void make_all_the_neighbouring_states()
 {
 	for(int i=0;i<noc;i++)
@@ -337,6 +354,102 @@ void make_all_the_neighbouring_states()
 	}
 }
 
+//trying to go to next best state
+void next_best_neighbour()
+{
+	//save the current state in max state initially
+	for (int i = 0; i < noc; i++)
+	{
+		company_bid_considered_max[i] = company_bid_considered[i];
+	}
+
+	for (int i = 0; i < nor; i++)
+	{
+		region_bid_index_max[i] = region_bid_index[i];
+	}
+
+	for (int i = 0; i < unallotted_regions_list.size(); i++)
+	{
+		unallotted_regions_list_max.push_back(unallotted_regions_list[i]);
+	}
+	//
+
+	for (int i = 0; i < noc; i++)
+	{
+		int bids_of_this_company=company_bid_list[i].size();
+		for (int j = 0; j < bids_of_this_company; i++)
+		{
+			//making a temp state
+			vector<int> region_bid_index_temp;
+			vector<int> company_bid_considered_temp;
+			vector<int> unallotted_regions_list_temp;
+
+			for (int i = 0; i < noc; i++)
+			{
+				company_bid_considered_temp[i] = company_bid_considered[i];
+			}
+
+			for (int i = 0; i < nor; i++)
+			{
+				region_bid_index_temp[i] = region_bid_index[i];
+			}
+
+			for (int i = 0; i < unallotted_regions_list.size(); i++)
+			{
+				unallotted_regions_list_temp.push_back(unallotted_regions_list[i]);
+			}
+			//
+
+
+			if(company_bid_considered[i]!=company_bid_list[i][j]){
+				int curr_bid = company_bid_list[i][j];
+				
+				//removing all the conflicting bids of the bid considered
+				set<int> conflicting_bids;
+				for (int k = 0; k < tob[curr_bid].norc; k++)
+				{
+					conflicting_bids.insert(region_bid_index[tob[curr_bid].region[k]]);
+				}
+					//iterating over the set
+				for(set<int>::const_iterator it = conflicting_bids.begin(); it != conflicting_bids.end(); it++) 
+				{ 
+   					   company_bid_considered_temp[tob[*it].cid] = -1;
+   					   for (int k = 0; k < tob[*it].norc; k++)
+   					    {
+   					    	region_bid_index_temp[tob[*it].region[k]] = -1;
+   					    } 
+ 				}
+ 				//
+ 				
+ 				//removing the current bid
+ 				for(int k=0;k<tob[company_bid_considered[i]].norc;k++)
+				{
+					region_bid_index_temp[tob[company_bid_considered[i]].region[k]] = -1;
+				}
+				company_bid_considered_temp[i] = curr_bid;
+				//
+
+				//making a list of left-out companies
+				vector<int> left_out_companies;
+				for(int k=0;k<noc;k++)
+				{
+					if(company_bid_considered_temp[k]==-1)
+					{
+						left_out_companies.push_back(k);
+					}
+				}
+				//
+
+				//
+
+				//
+
+			}
+		}
+	}
+
+}
+
 int main()
 {
 	readFile();
@@ -344,6 +457,6 @@ int main()
 	print_company_bid_lists();
 	make_random_start_state();
 	print_random_start_state();
-	make_all_the_neighbouring_states();
+	//make_all_the_neighbouring_states();
 	return 0;
 }
