@@ -61,6 +61,8 @@ void readFile()
 	scanf("%d\n\n",&noc);
 	region_bid_index.resize(nor, -1);
 	company_bid_considered.resize(noc,-1);
+	company_bid_considered_max.resize(noc,-1);
+	region_bid_index_max.resize(nor,-1);
 	for(int i=0;i<nob;i++)
 	{
 		cout<<flush;
@@ -369,6 +371,7 @@ void make_all_the_neighbouring_states()
 */
 void brute_force(double profit,int index,vector<int> unallocated,vector<int> bids_considered_bf)
 {
+	cout<<"11"<<endl;
 	if(index==compatible_bids_left_companies.size()){
 		if(profit>max_profit)
 		{
@@ -382,9 +385,14 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
 			max_profit = profit;
 
 		}
+		return;
 	}
+	cout<<"12"<<endl;
+	cout<<"num "<<compatible_bids_left_companies.size()<<endl;
+	cout<<"num bids "<<compatible_bids_left_companies[index].size()<<endl;
 	for(int k=-1;k<compatible_bids_left_companies[index].size();k++)
 	{
+		cout<<"13"<<endl;
 		if(k==-1)
 		{
 			brute_force(profit,index+1,unallocated,bids_considered_bf);
@@ -422,6 +430,7 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
 					}
 				}
 			}
+			cout<<"14"<<endl;
 
 			if(bid_compatible)
 			{
@@ -446,7 +455,7 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
 
 			}
 
-
+cout<<"15"<<endl;
 
 
 			
@@ -458,6 +467,8 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
 //trying to go to next best state
 void next_best_neighbour()
 {
+	//cout<<"main3"<<endl;
+
 	//save the current state in max state initially
 	for (int i = 0; i < noc; i++)
 	{
@@ -475,16 +486,18 @@ void next_best_neighbour()
 	}
 	max_profit_neighbour = profit_current_state();
 	//
-
+	//cout<<"main1"<<endl;
 	for (int i = 0; i < noc; i++)
 	{
 		int bids_of_this_company=company_bid_list[i].size();
-		for (int j = 0; j < bids_of_this_company; i++)
+		for (int j = 0; j < bids_of_this_company; j++)
 		{
 			//making a temp state
 			vector<int> region_bid_index_temp;
 			vector<int> company_bid_considered_temp;
 			vector<int> unallotted_regions_list_temp;
+			region_bid_index_temp.resize(nor,-1);
+			company_bid_considered_temp.resize(noc,-1);
 
 			for (int l = 0; l < noc; l++)
 			{
@@ -501,26 +514,33 @@ void next_best_neighbour()
 				unallotted_regions_list_temp.push_back(unallotted_regions_list[l]);
 			}
 			//
-
+	cout<<"main2"<<endl;
 
 			if(company_bid_considered[i]!=company_bid_list[i][j]){
 				int curr_bid = company_bid_list[i][j];
-				
+				cout<<"1"<<endl;
 				//removing all the conflicting bids of the bid considered
 				set<int> conflicting_bids;
 				for (int k = 0; k < tob[curr_bid].norc; k++)
 				{
+					if(region_bid_index[tob[curr_bid].region[k]]!=-1)
 					conflicting_bids.insert(region_bid_index[tob[curr_bid].region[k]]);
 				}
+				cout<<"3"<<endl;
 					//iterating over the set
 				for(set<int>::const_iterator it = conflicting_bids.begin(); it != conflicting_bids.end(); it++) 
 				{ 
+					cout<<"4"<<endl;
+					cout<<"it is "<<*it<<endl;
    					   company_bid_considered_temp[tob[*it].cid] = -1;
+   					   cout<<"6"<<endl;
    					   for (int k = 0; k < tob[*it].norc; k++)
    					    {
+   					    	cout<<"5"<<endl;
    					    	region_bid_index_temp[tob[*it].region[k]] = -1;
    					    } 
  				}
+ 				cout<<"2"<<endl;
  				//
  				
  				//removing the current bid
@@ -530,7 +550,7 @@ void next_best_neighbour()
 				}
 				company_bid_considered_temp[i] = curr_bid;
 				//
-
+				cout<<"7"<<endl;
 				//making a list of left-out companies
 				vector<int> left_out_companies;
 				for(int k=0;k<noc;k++)
@@ -550,7 +570,7 @@ void next_best_neighbour()
 					}
 				}
 
-
+				cout<<"8"<<endl;
 				//initializing the 2D vector
 				compatible_bids_left_companies.resize(0);
 				compatible_bids_left_companies.resize(left_out_companies.size());
@@ -588,11 +608,11 @@ void next_best_neighbour()
 						}
 					}
 				}
-
+				cout<<"9"<<endl;
 				max_profit = 0;
 				vector<int> bidss;
 				brute_force(0,0,unallotted_regions_list_temp,bidss);
-
+				cout<<"10"<<endl;
 				for (int l = 0;l < bids_considered_bf_max.size(); l++)
 				{
 					company_bid_considered_temp[tob[bids_considered_bf_max[l]].cid] = bids_considered_bf_max[l];
