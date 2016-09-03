@@ -371,7 +371,7 @@ void make_all_the_neighbouring_states()
 */
 void brute_force(double profit,int index,vector<int> unallocated,vector<int> bids_considered_bf)
 {
-	cout<<"11"<<endl;
+	//cout<<"11"<<endl;
 	if(index==compatible_bids_left_companies.size()){
 		if(profit>max_profit)
 		{
@@ -387,12 +387,12 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
 		}
 		return;
 	}
-	cout<<"12"<<endl;
-	cout<<"num "<<compatible_bids_left_companies.size()<<endl;
-	cout<<"num bids "<<compatible_bids_left_companies[index].size()<<endl;
+	//cout<<"12"<<endl;
+	//cout<<"num "<<compatible_bids_left_companies.size()<<endl;
+	//cout<<"num bids "<<compatible_bids_left_companies[index].size()<<endl;
 	for(int k=-1;k<compatible_bids_left_companies[index].size();k++)
 	{
-		cout<<"13"<<endl;
+	//	cout<<"13"<<endl;
 		if(k==-1)
 		{
 			brute_force(profit,index+1,unallocated,bids_considered_bf);
@@ -430,7 +430,7 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
 					}
 				}
 			}
-			cout<<"14"<<endl;
+	//		cout<<"14"<<endl;
 
 			if(bid_compatible)
 			{
@@ -454,10 +454,6 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
  				brute_force(profit+tob[compatible_bids_left_companies[index][k]].price,index+1,unallocated_new,bids_considered_bf_new);
 
 			}
-
-cout<<"15"<<endl;
-
-
 			
 		}
 	}
@@ -514,11 +510,11 @@ void next_best_neighbour()
 				unallotted_regions_list_temp.push_back(unallotted_regions_list[l]);
 			}
 			//
-	cout<<"main2"<<endl;
+	//cout<<"main2"<<endl;
 
 			if(company_bid_considered[i]!=company_bid_list[i][j]){
 				int curr_bid = company_bid_list[i][j];
-				cout<<"1"<<endl;
+	//			cout<<"1"<<endl;
 				//removing all the conflicting bids of the bid considered
 				set<int> conflicting_bids;
 				for (int k = 0; k < tob[curr_bid].norc; k++)
@@ -526,21 +522,21 @@ void next_best_neighbour()
 					if(region_bid_index[tob[curr_bid].region[k]]!=-1)
 					conflicting_bids.insert(region_bid_index[tob[curr_bid].region[k]]);
 				}
-				cout<<"3"<<endl;
+	//			cout<<"3"<<endl;
 					//iterating over the set
 				for(set<int>::const_iterator it = conflicting_bids.begin(); it != conflicting_bids.end(); it++) 
 				{ 
-					cout<<"4"<<endl;
-					cout<<"it is "<<*it<<endl;
+	//				cout<<"4"<<endl;
+	//				cout<<"it is "<<*it<<endl;
    					   company_bid_considered_temp[tob[*it].cid] = -1;
-   					   cout<<"6"<<endl;
+   	//				   cout<<"6"<<endl;
    					   for (int k = 0; k < tob[*it].norc; k++)
    					    {
-   					    	cout<<"5"<<endl;
+   					    	//cout<<"5"<<endl;
    					    	region_bid_index_temp[tob[*it].region[k]] = -1;
    					    } 
  				}
- 				cout<<"2"<<endl;
+ 				//cout<<"2"<<endl;
  				//
  				
  				//removing the current bid
@@ -550,7 +546,7 @@ void next_best_neighbour()
 				}
 				company_bid_considered_temp[i] = curr_bid;
 				//
-				cout<<"7"<<endl;
+				//cout<<"7"<<endl;
 				//making a list of left-out companies
 				vector<int> left_out_companies;
 				for(int k=0;k<noc;k++)
@@ -570,7 +566,7 @@ void next_best_neighbour()
 					}
 				}
 
-				cout<<"8"<<endl;
+				//cout<<"8"<<endl;
 				//initializing the 2D vector
 				compatible_bids_left_companies.resize(0);
 				compatible_bids_left_companies.resize(left_out_companies.size());
@@ -608,11 +604,11 @@ void next_best_neighbour()
 						}
 					}
 				}
-				cout<<"9"<<endl;
+				//cout<<"9"<<endl;
 				max_profit = 0;
 				vector<int> bidss;
 				brute_force(0,0,unallotted_regions_list_temp,bidss);
-				cout<<"10"<<endl;
+				//cout<<"10"<<endl;
 				for (int l = 0;l < bids_considered_bf_max.size(); l++)
 				{
 					company_bid_considered_temp[tob[bids_considered_bf_max[l]].cid] = bids_considered_bf_max[l];
@@ -668,9 +664,55 @@ int main()
 	make_company_bid_list();
 	print_company_bid_lists();
 	make_random_start_state();
+
+	for (int l = 0; l < noc; l++)
+	{
+		company_bid_considered_max[l] = company_bid_considered[l];
+	}
+
+	for (int l = 0; l < nor; l++)
+	{
+		region_bid_index_max[l] = region_bid_index[l];
+	}
+
+	for (int l = 0; l < unallotted_regions_list.size(); l++)
+	{
+		unallotted_regions_list_max.push_back(unallotted_regions_list[l]);
+	}
+
 	print_random_start_state();
-	next_best_neighbour();
-	print_best_neighbour_state();
-	//make_all_the_neighbouring_states();
+	//next_best_neighbour();
+	//print_best_neighbour_state();
+	do{
+//		cout<<"3"<<endl;
+		for (int l = 0; l < noc; l++)
+		{
+			company_bid_considered[l] = company_bid_considered_max[l];
+		}
+//cout<<"4"<<endl;
+		for (int l = 0; l < nor; l++)
+		{
+			region_bid_index[l] = region_bid_index_max[l];
+		}
+//cout<<"5"<<endl;
+unallotted_regions_list.resize(0);
+		for (int l = 0; l < unallotted_regions_list.size(); l++)
+		{
+			unallotted_regions_list.push_back(unallotted_regions_list_max[l]);
+		}
+		//cout<<"1"<<endl;
+		next_best_neighbour();
+		//cout<<"2"<<endl;
+	}
+	while(max_profit_neighbour>profit_current_state());
+
+
+	for(int i=0;i<noc;i++)
+	{
+		cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered_max[i]<<endl;
+	}
+	cout<<"Max. Profit is "<<max_profit_neighbour<<endl;
+
+
 	return 0;
 }
