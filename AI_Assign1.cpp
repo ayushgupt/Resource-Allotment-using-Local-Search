@@ -438,11 +438,56 @@ void next_best_neighbour()
 						left_out_companies.push_back(k);
 					}
 				}
-				//
+				//Updating the local Temp unallocated vector
+				unallotted_regions_list_temp.resize(0);
+				for(int k=0;k<region_bid_index_temp.size();k++)
+				{
+					if(region_bid_index_temp[k]==-1)
+					{
+						unallotted_regions_list_temp.push_back(k);
+					}
+				}
 
-				//
 
-				//
+				//initializing the 2D vector
+				vector< vector<int> > compatible_bids_left_companies;
+				compatible_bids_left_companies.resize(left_out_companies.size())
+				//Making the 2D vector
+				for(int k=0;k<left_out_companies.size();k++)
+				{
+					for(int l=0;l<company_bid_list[left_out_companies[k]].size();l++)
+					{
+						bool compatible_with_unallocated_temp = true;
+						//Bid=company_bid_list[left_out_companies[k]][l]
+						//Region array of Bid= tob[ company_bid_list[left_out_companies[k]][l] ].region
+
+						vector<int> bid_region_vector((tob[ company_bid_list[left_out_companies[k]][l] ].region), (tob[ company_bid_list[left_out_companies[k]][l] ].region)+(tob[ company_bid_list[left_out_companies[k]][l] ].norc));
+						vector<int> intersection_vector = vector<int> (intersection_dummy_vector, set_intersection( all(bid_region_vector), all(unallotted_regions_list_temp), intersection_dummy_vector ));
+						int bid_region_size=bid_region_vector.size();
+						if(intersection_vector.size()!=bid_region_vector.size())
+						{
+							compatible_with_unallocated_temp=false;
+						}
+						else
+						{
+							for(int m=0;m<bid_region_size;m++)
+							{
+								if(intersection_vector[m]!=bid_region_vector[m])
+								{
+									compatible_with_unallocated_temp=false;
+									break;
+								}
+							}
+						}
+
+						if(compatible_with_unallocated_temp)
+						{
+							compatible_bids_left_companies[k].push_back(company_bid_list[left_out_companies[k]][l]);	
+						}
+					}
+				}
+
+
 
 			}
 		}
