@@ -8,6 +8,7 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
+#include <ctime>
 #define max 10000
 #define all(c) (c).begin(),(c).end() 
 using namespace std;
@@ -52,6 +53,10 @@ vector< vector<int> > compatible_bids_left_companies;
 double max_profit;
 vector<int> bids_considered_bf_max;
 
+double time_in_seconds=0.0;
+vector<int> company_bid_considered_max_to_output;
+double all_time_max_profit=0;
+
 void readFile()
 {
 	ifstream infile;
@@ -60,6 +65,7 @@ void readFile()
 	string garbage;
 	//scanf("%f\n\n",&tim);
 	infile>> tim;
+	time_in_seconds=(double)tim*60;
 	getline(infile,garbage);
 	getline(infile,garbage);
 	//scanf("%d\n\n",&nor);
@@ -776,8 +782,12 @@ int main()
 	readFile();
 	make_company_bid_list();
 	//print_company_bid_lists();
-	make_random_start_state();
+	double num_of_restarts=0;
+	company_bid_considered_max_to_output.resize(noc,-1);
+	clock_t begin = clock();
 
+	LOOP:
+	make_random_start_state();
 	for (int l = 0; l < noc; l++)
 	{
 		company_bid_considered_max[l] = company_bid_considered[l];
@@ -797,7 +807,6 @@ int main()
 	//next_best_neighbour();
 	//print_best_neighbour_state();
 	do{
-//		cout<<"3"<<endl;
 		// cout<<"I found a better BID Arrangement"<<endl;
 		// for(int l=0; l<nor;l++)
 		// {
@@ -817,31 +826,47 @@ int main()
 			company_bid_considered[l] = company_bid_considered_max[l];
 		}
 
-//cout<<"4"<<endl;
-		for (int l = 0; l < nor; l++)
-		{
-			region_bid_index[l] = region_bid_index_max[l];
-		}
 
-//cout<<"5"<<endl;
-unallotted_regions_list.resize(0);
+		unallotted_regions_list.resize(0);
 		for (int l = 0; l < unallotted_regions_list.size(); l++)
 		{
 			unallotted_regions_list.push_back(unallotted_regions_list_max[l]);
 		}
-		//cout<<"next_best_start"<<endl;
+		
 		next_best_neighbour();
-		//cout<<"next_best_end"<<endl;
+		
 	}
 	while(max_profit_neighbour>profit_current_state());
+
+
+	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	double pr_curr_state=profit_current_state();
+	if(all_time_max_profit<pr_curr_state)
+	{
+		all_time_max_profit=pr_curr_state;
+		
+		for(int m=0;m<noc;m++)
+		{
+			company_bid_considered_max_to_output[m]=company_bid_considered[m];
+		}
+	}
+	num_of_restarts+=1;
+	cout<<"num_of_restarts: "<<num_of_restarts<<endl;
+	cout<<"elapsed_secs: "<<elapsed_secs<<endl;
+	cout<<"per_iter_time: "<<elapsed_secs/num_of_restarts<<endl;
+	if((time_in_seconds-elapsed_secs)>((2*elapsed_secs)/num_of_restarts) )
+	{
+		goto LOOP;
+	}
+
 
 	ofstream outfile;
 	outfile.open ("output.txt");
 	for(int i=0;i<noc;i++)
 	{
-		//cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered_max[i]<<endl;
-		if(company_bid_considered_max[i]!=-1)
-		outfile<<company_bid_considered_max[i]<<" ";
+		if(company_bid_considered_max_to_output[i]!=-1)
+		outfile<<company_bid_considered_max_to_output[i]<<" ";
 	}
 	outfile<<"#"<<endl;
 	outfile.close();
