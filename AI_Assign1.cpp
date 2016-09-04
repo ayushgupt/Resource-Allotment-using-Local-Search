@@ -54,11 +54,26 @@ vector<int> bids_considered_bf_max;
 
 void readFile()
 {
+	ifstream infile;
+	infile.open("input.txt");
 	string g;
-	scanf("%f\n\n",&tim);
-	scanf("%d\n\n",&nor);
-	scanf("%d\n\n",&nob);
-	scanf("%d\n\n",&noc);
+	string garbage;
+	//scanf("%f\n\n",&tim);
+	infile>> tim;
+	getline(infile,garbage);
+	getline(infile,garbage);
+	//scanf("%d\n\n",&nor);
+	infile>> nor;
+	getline(infile,garbage);
+	getline(infile,garbage);
+	//scanf("%d\n\n",&nob);
+	infile>> nob;
+	getline(infile,garbage);
+	getline(infile,garbage);
+	//scanf("%d\n\n",&noc);
+	infile>> noc;
+	getline(infile,garbage);
+	getline(infile,garbage);
 	region_bid_index.resize(nor, -1);
 	company_bid_considered.resize(noc,-1);
 	company_bid_considered_max.resize(noc,-1);
@@ -67,7 +82,7 @@ void readFile()
 	{
 		cout<<flush;
 		string ch;
-		getline(cin,ch);
+		getline(infile,ch);
 		int t=0;int j=0;
 		char ch1[max];
 		while(ch[t]!=' ')
@@ -112,8 +127,9 @@ void readFile()
 			tob[i].region[qq]=atoi(ch1);
 		}
 		sort(tob[i].region,tob[i].region+x);//sorting the region ids in increasing order of index
-		getline(cin,g);	
+		getline(infile,g);	
 	}
+	infile.close();
 }
 void make_company_bid_list()
 {
@@ -759,7 +775,7 @@ int main()
 {
 	readFile();
 	make_company_bid_list();
-	print_company_bid_lists();
+	//print_company_bid_lists();
 	make_random_start_state();
 
 	for (int l = 0; l < noc; l++)
@@ -777,7 +793,7 @@ int main()
 		unallotted_regions_list_max.push_back(unallotted_regions_list[l]);
 	}
 
-	print_random_start_state();
+	//print_random_start_state();
 	//next_best_neighbour();
 	//print_best_neighbour_state();
 	do{
@@ -813,18 +829,23 @@ unallotted_regions_list.resize(0);
 		{
 			unallotted_regions_list.push_back(unallotted_regions_list_max[l]);
 		}
-		cout<<"next_best_start"<<endl;
+		//cout<<"next_best_start"<<endl;
 		next_best_neighbour();
-		cout<<"next_best_end"<<endl;
+		//cout<<"next_best_end"<<endl;
 	}
 	while(max_profit_neighbour>profit_current_state());
 
-
-	// for(int i=0;i<noc;i++)
-	// {
-	// 	cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered_max[i]<<endl;
-	// }
-	 cout<<"Max. Profit is "<<max_profit_neighbour<<endl;
+	ofstream outfile;
+	outfile.open ("output.txt");
+	for(int i=0;i<noc;i++)
+	{
+		//cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered_max[i]<<endl;
+		if(company_bid_considered_max[i]!=-1)
+		outfile<<company_bid_considered_max[i]<<" ";
+	}
+	outfile<<"#"<<endl;
+	outfile.close();
+	// cout<<"Max. Profit is "<<max_profit_neighbour<<endl;
 
 
 	return 0;
