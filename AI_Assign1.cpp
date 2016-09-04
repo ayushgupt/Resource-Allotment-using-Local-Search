@@ -242,12 +242,12 @@ void make_random_start_state()
 				compatible_bids_of_this_company.push_back(company_bid_list[i][j]);
 			}
 		}
-		cout<<"For Company : "<<i<<": compatible_bids_of_this_company is :: ";
-		for (int j = 0; j < compatible_bids_of_this_company.size(); j++)
-		{
-			cout<<compatible_bids_of_this_company[j]<<" ";
-		}
-		cout<<endl;
+		// cout<<"For Company : "<<i<<": compatible_bids_of_this_company is :: ";
+		// for (int j = 0; j < compatible_bids_of_this_company.size(); j++)
+		// {
+		// 	cout<<compatible_bids_of_this_company[j]<<" ";
+		// }
+		// cout<<endl;
 		if(!compatible_bids_of_this_company.empty())
 		{
 			srand (time(NULL));
@@ -370,7 +370,8 @@ void make_all_the_neighbouring_states()
 }
 */
 void brute_force(double profit,int index,vector<int> unallocated,vector<int> bids_considered_bf)
-{
+{//cout<<"BF_START"<<endl;
+
 	//cout<<"11"<<endl;
 	if(index==compatible_bids_left_companies.size()){
 		if(profit>max_profit)
@@ -457,34 +458,53 @@ void brute_force(double profit,int index,vector<int> unallocated,vector<int> bid
 			
 		}
 	}
-
+//cout<<"BF_END"<<endl;
 }
 
 //trying to go to next best state
 void next_best_neighbour()
 {
-	//cout<<"main3"<<endl;
 
 	//save the current state in max state initially
 	for (int i = 0; i < noc; i++)
 	{
 		company_bid_considered_max[i] = company_bid_considered[i];
 	}
-
+//cout<<"CHECK_POINT_2"<<endl;
 	for (int i = 0; i < nor; i++)
 	{
 		region_bid_index_max[i] = region_bid_index[i];
 	}
-
+//cout<<"CHECK_POINT_3"<<endl;	
+	unallotted_regions_list_max.resize(0);
 	for (int i = 0; i < unallotted_regions_list.size(); i++)
 	{
 		unallotted_regions_list_max.push_back(unallotted_regions_list[i]);
 	}
+
+
+	// cout<<"This is the Max BID Arrangement just after pushing in the current state into it"<<endl;
+	// 	for(int l=0; l<nor;l++)
+	// 	{
+	// 		if(region_bid_index_max[l]==-1)
+	// 		{
+	// 			cout<<"Region "<<l<<" : Unallocated"<<endl;
+	// 		}
+	// 		else
+	// 		{
+	// 			cout<<"Region "<<l<<" : Bid ID "<<region_bid_index_max[l]<<" And Company "<<tob[region_bid_index_max[l]].cid<<endl;
+	// 		}
+	// 	}
+	// 	cout<<"END HERE"<<endl;
+//cout<<"CHECK_POINT_4"<<endl;
 	max_profit_neighbour = profit_current_state();
 	//
 	//cout<<"main1"<<endl;
 	for (int i = 0; i < noc; i++)
 	{
+//		cout<<"CHECK_POINT_5"<<endl;
+//		cout<<"COMPANY____________INDEX IS"<<i<<endl;
+		// cout<<"Started with changing bids of company "<<i<<endl;
 		int bids_of_this_company=company_bid_list[i].size();
 		for (int j = 0; j < bids_of_this_company; j++)
 		{
@@ -494,7 +514,7 @@ void next_best_neighbour()
 			vector<int> unallotted_regions_list_temp;
 			region_bid_index_temp.resize(nor,-1);
 			company_bid_considered_temp.resize(noc,-1);
-
+//			cout<<"CHECK_POINT_6"<<endl;
 			for (int l = 0; l < noc; l++)
 			{
 				company_bid_considered_temp[l] = company_bid_considered[l];
@@ -509,25 +529,31 @@ void next_best_neighbour()
 			{
 				unallotted_regions_list_temp.push_back(unallotted_regions_list[l]);
 			}
+		//	cout<<"CHECK_POINT_7"<<endl;
 			//
 	//cout<<"main2"<<endl;
 
-			if(company_bid_considered[i]!=company_bid_list[i][j]){
+			if(company_bid_considered_temp[i]!=company_bid_list[i][j])
+			{
 				int curr_bid = company_bid_list[i][j];
+				//cout<<"Trying to insert the bid index "<<curr_bid<<endl;
 	//			cout<<"1"<<endl;
 				//removing all the conflicting bids of the bid considered
 				set<int> conflicting_bids;
 				for (int k = 0; k < tob[curr_bid].norc; k++)
 				{
-					if(region_bid_index[tob[curr_bid].region[k]]!=-1)
-					conflicting_bids.insert(region_bid_index[tob[curr_bid].region[k]]);
+					if(region_bid_index_temp[tob[curr_bid].region[k]]!=-1)
+					conflicting_bids.insert(region_bid_index_temp[tob[curr_bid].region[k]]);
 				}
+			//	cout<<"CHECK_POINT_8"<<endl;
 	//			cout<<"3"<<endl;
 					//iterating over the set
+				//cout<<"The Bids of other companies that conflicted with the above bid as they were considered are : ";
 				for(set<int>::const_iterator it = conflicting_bids.begin(); it != conflicting_bids.end(); it++) 
 				{ 
 	//				cout<<"4"<<endl;
 	//				cout<<"it is "<<*it<<endl;
+					//cout<<*it<<" "; 
    					   company_bid_considered_temp[tob[*it].cid] = -1;
    	//				   cout<<"6"<<endl;
    					   for (int k = 0; k < tob[*it].norc; k++)
@@ -536,15 +562,29 @@ void next_best_neighbour()
    					    	region_bid_index_temp[tob[*it].region[k]] = -1;
    					    } 
  				}
+ 				//cout<<endl;
+ 			//	cout<<"CHECK_POINT_9"<<endl;
  				//cout<<"2"<<endl;
  				//
  				
  				//removing the current bid
- 				for(int k=0;k<tob[company_bid_considered[i]].norc;k++)
-				{
-					region_bid_index_temp[tob[company_bid_considered[i]].region[k]] = -1;
-				}
+ 				if(company_bid_considered_temp[i]!=-1)
+ 				{
+ 					//cout<<"The bid of this company that is already considered and which i will now remove is "<<company_bid_considered_temp[i]<<endl;
+ 					for(int k=0;k<tob[company_bid_considered_temp[i]].norc;k++)
+					{
+						region_bid_index_temp[tob[company_bid_considered[i]].region[k]] = -1;
+					}	
+ 				}
+ 				
 				company_bid_considered_temp[i] = curr_bid;
+
+				for(int k=0;k<tob[curr_bid].norc;k++)
+				{
+					region_bid_index_temp[tob[curr_bid].region[k]]=curr_bid;
+				}
+
+			//	cout<<"CHECK_POINT_10"<<endl;
 				//
 				//cout<<"7"<<endl;
 				//making a list of left-out companies
@@ -556,16 +596,27 @@ void next_best_neighbour()
 						left_out_companies.push_back(k);
 					}
 				}
+				//cout<<"The companies whose bids are now not at all considered are ";
+				// for(int k=0;k<left_out_companies.size();k++)
+				// {
+				// 	cout<<left_out_companies[k]<<" ";
+				// }
+				// cout<<endl;
+			//	cout<<"CHECK_POINT_11"<<endl;
 				//Updating the local Temp unallocated vector
+
 				unallotted_regions_list_temp.resize(0);
+				//cout<<"The Unallocated regions at the moment are ";
 				for(int k=0;k<region_bid_index_temp.size();k++)
 				{
 					if(region_bid_index_temp[k]==-1)
 					{
+						//cout<<k<<" ";
 						unallotted_regions_list_temp.push_back(k);
 					}
 				}
-
+				//cout<<endl;
+//cout<<"CHECK_POINT_12"<<endl;
 				//cout<<"8"<<endl;
 				//initializing the 2D vector
 				compatible_bids_left_companies.resize(0);
@@ -575,6 +626,7 @@ void next_best_neighbour()
 				{
 					for(int l=0;l<company_bid_list[left_out_companies[k]].size();l++)
 					{
+					//	cout<<"CHECK_POINT_13"<<endl;
 						bool compatible_with_unallocated_temp = true;
 						//Bid=company_bid_list[left_out_companies[k]][l]
 						//Region array of Bid= tob[ company_bid_list[left_out_companies[k]][l] ].region
@@ -582,12 +634,14 @@ void next_best_neighbour()
 						vector<int> bid_region_vector((tob[ company_bid_list[left_out_companies[k]][l] ].region), (tob[ company_bid_list[left_out_companies[k]][l] ].region)+(tob[ company_bid_list[left_out_companies[k]][l] ].norc));
 						vector<int> intersection_vector = vector<int> (intersection_dummy_vector, set_intersection( all(bid_region_vector), all(unallotted_regions_list_temp), intersection_dummy_vector ));
 						int bid_region_size=bid_region_vector.size();
+					//	cout<<"CHECK_POINT_14"<<endl;
 						if(intersection_vector.size()!=bid_region_vector.size())
 						{
 							compatible_with_unallocated_temp=false;
 						}
 						else
 						{
+					//		cout<<"CHECK_POINT_15"<<endl;
 							for(int m=0;m<bid_region_size;m++)
 							{
 								if(intersection_vector[m]!=bid_region_vector[m])
@@ -596,6 +650,7 @@ void next_best_neighbour()
 									break;
 								}
 							}
+						//	cout<<"CHECK_POINT_16"<<endl;
 						}
 
 						if(compatible_with_unallocated_temp)
@@ -605,9 +660,30 @@ void next_best_neighbour()
 					}
 				}
 				//cout<<"9"<<endl;
+			//	cout<<"CHECK_POINT_17"<<endl;
+				//cout<<"Now the compatible bids from these companies whose bid is not taken and bids which can be adjusted in unallotted regions list are:"<<endl;
+				for(int k=0;k<compatible_bids_left_companies.size();k++)
+				{
+					//cout<<"From company "<<left_out_companies[k]<<" Bids that can be taken are";
+					// for(int l=0;l<compatible_bids_left_companies[k].size();l++)
+					// {
+					// 	cout<<compatible_bids_left_companies[k][l]<<" ";
+					// }
+					//cout<<endl;
+				}
 				max_profit = 0;
 				vector<int> bidss;
+				//cout<<"Now I am starting the brute force"<<endl;
 				brute_force(0,0,unallotted_regions_list_temp,bidss);
+				//cout<<"Now I am ending the brute force"<<endl;
+
+				//cout<<"The Bids that brute force told me to return is :";
+				// for(int k=0;k<bids_considered_bf_max.size();k++)
+				// {
+				// 	cout<<bids_considered_bf_max[k]<<" ";
+				// }
+				//cout<<endl;
+			//	cout<<"CHECK_POINT_18"<<endl;
 				//cout<<"10"<<endl;
 				for (int l = 0;l < bids_considered_bf_max.size(); l++)
 				{
@@ -617,7 +693,7 @@ void next_best_neighbour()
 						region_bid_index_temp[tob[bids_considered_bf_max[l]].region[h]] = bids_considered_bf_max[l];
 					}
 				}
-
+//cout<<"CHECK_POINT_19"<<endl;
 				unallotted_regions_list_temp.resize(0);
 				for(int k=0;k<region_bid_index_temp.size();k++)
 				{
@@ -627,14 +703,34 @@ void next_best_neighbour()
 					}
 				}
 
+		// cout<<"So finally the state that is made by taking the best brute force is"<<endl;
+		// for(int l=0; l<nor;l++)
+		// {
+		// 	if(region_bid_index_temp[l]==-1)
+		// 	{
+		// 		cout<<"Region "<<l<<" : Unallocated"<<endl;
+		// 	}
+		// 	else
+		// 	{
+		// 		cout<<"Region "<<l<<" : Bid ID "<<region_bid_index_temp[l]<<" And Company "<<tob[region_bid_index_temp[l]].cid<<endl;
+		// 	}
+		// }
+		// cout<<"END HERE"<<endl;
+
+
+//cout<<"CHECK_POINT_20"<<endl;
 				double profit_temp = 0.0;
 				for(int k=0;k<noc;k++)
 				{
-					if(company_bid_considered_temp[i]!=-1)
-					profit_temp+= tob[company_bid_considered_temp[i]].price;
+					if(company_bid_considered_temp[k]!=-1)
+					profit_temp+= tob[company_bid_considered_temp[k]].price;
 				}
+//cout<<"CHECK_POINT_21"<<endl;				
 				if(profit_temp>max_profit_neighbour)
 				{
+					// cout<<"Profit Temp is :"<<profit_temp<<endl;
+					// cout<<"Max Profit Neighour till now is :"<<max_profit_neighbour<<endl;
+					// cout<<"So Guess what the above temp state is actually my best neighour state till now so I am pushing it to max state"<<endl;
 					for (int l = 0; l < noc; l++)
 					{
 						company_bid_considered_max[l] = company_bid_considered_temp[l];
@@ -644,13 +740,14 @@ void next_best_neighbour()
 					{
 						region_bid_index_max[l] = region_bid_index_temp[l];
 					}
-
+					unallotted_regions_list_max.resize(0);
 					for (int l = 0; l < unallotted_regions_list.size(); l++)
 					{
 						unallotted_regions_list_max.push_back(unallotted_regions_list_temp[l]);
 					}
 					max_profit_neighbour = profit_temp;
 				}
+//				cout<<"CHECK_POINT_22"<<endl;
 
 			}
 		}
@@ -685,33 +782,49 @@ int main()
 	//print_best_neighbour_state();
 	do{
 //		cout<<"3"<<endl;
+		// cout<<"I found a better BID Arrangement"<<endl;
+		// for(int l=0; l<nor;l++)
+		// {
+		// 	if(region_bid_index_max[l]==-1)
+		// 	{
+		// 		cout<<"Region "<<l<<" : Unallocated"<<endl;
+		// 	}
+		// 	else
+		// 	{
+		// 		cout<<"Region "<<l<<" : Bid ID "<<region_bid_index_max[l]<<" And Company "<<tob[region_bid_index_max[l]].cid<<endl;
+		// 	}
+		// }
+		// cout<<"END HERE"<<endl;
+		
 		for (int l = 0; l < noc; l++)
 		{
 			company_bid_considered[l] = company_bid_considered_max[l];
 		}
+
 //cout<<"4"<<endl;
 		for (int l = 0; l < nor; l++)
 		{
 			region_bid_index[l] = region_bid_index_max[l];
 		}
+
 //cout<<"5"<<endl;
 unallotted_regions_list.resize(0);
 		for (int l = 0; l < unallotted_regions_list.size(); l++)
 		{
 			unallotted_regions_list.push_back(unallotted_regions_list_max[l]);
 		}
-		//cout<<"1"<<endl;
+		cout<<"next_best_start"<<endl;
 		next_best_neighbour();
-		//cout<<"2"<<endl;
+		cout<<"next_best_end"<<endl;
 	}
 	while(max_profit_neighbour>profit_current_state());
 
 
-	for(int i=0;i<noc;i++)
-	{
-		cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered_max[i]<<endl;
-	}
-	cout<<"Max. Profit is "<<max_profit_neighbour<<endl;
+	// for(int i=0;i<noc;i++)
+	// {
+	// 	cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered_max[i]<<endl;
+	// }
+	 cout<<"Max. Profit is "<<max_profit_neighbour<<endl;
 
 
 	return 0;
