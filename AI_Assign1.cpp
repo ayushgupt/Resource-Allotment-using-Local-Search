@@ -50,6 +50,7 @@ vector< vector<int> > company_bid_considered_neighbours;
 vector< vector<int> > unallotted_regions_list_neighbours;
 
 vector< vector<int> > compatible_bids_left_companies;
+
 double max_profit;
 vector<int> bids_considered_bf_max;
 
@@ -216,8 +217,13 @@ void update_unallotted_regions_list()
 }
 void make_random_start_state()
 {
-	for(int i=0;i<noc;i++)
-	{
+	//srand (time(NULL));
+	int i= rand() % noc;
+	cout<<"start_random_index : "<<i<<endl;
+	int m = 0;
+	while(m<noc){
+	// for(int i=start_ind;i<noc;i++)
+	// {
 		update_unallotted_regions_list();
 		// cout<<"For Company : "<<i<<": unallotted_regions_list is :: ";
 		// for (int j = 0; j < unallotted_regions_list.size(); j++)
@@ -227,8 +233,12 @@ void make_random_start_state()
 		// cout<<endl;
 		vector<int> compatible_bids_of_this_company;
 		int num_of_bids_of_company = company_bid_list[i].size();
-		for(int j=0;j<num_of_bids_of_company;j++)
-		{
+		int m2 = 0;
+		int j = rand()%num_of_bids_of_company;
+		while(m2<num_of_bids_of_company){
+		// for(int j=0;j<num_of_bids_of_company;j++)
+		// {
+
 			//converting that array into vector
 			vector<int> bid_region_vector((tob[ company_bid_list[i][j] ].region), (tob[ company_bid_list[i][j] ].region)+(tob[ company_bid_list[i][j] ].norc));
 			
@@ -263,6 +273,9 @@ void make_random_start_state()
 			{
 				compatible_bids_of_this_company.push_back(company_bid_list[i][j]);
 			}
+
+			m2++;
+			j = (j+1)%num_of_bids_of_company;
 		}
 		// cout<<"For Company : "<<i<<": compatible_bids_of_this_company is :: ";
 		// for (int j = 0; j < compatible_bids_of_this_company.size(); j++)
@@ -272,11 +285,12 @@ void make_random_start_state()
 		// cout<<endl;
 		if(!compatible_bids_of_this_company.empty())
 		{
-			srand (time(NULL));
+			//srand (time(NULL));
 			int rand_bid_index_of_compatible_vector= rand() % (compatible_bids_of_this_company.size());
 			add_bid(compatible_bids_of_this_company[rand_bid_index_of_compatible_vector]);
 		}
-		
+		i = (i+1)%noc;
+		m++;
 	}
 }
 
@@ -684,15 +698,15 @@ void next_best_neighbour()
 				//cout<<"9"<<endl;
 			//	cout<<"CHECK_POINT_17"<<endl;
 				//cout<<"Now the compatible bids from these companies whose bid is not taken and bids which can be adjusted in unallotted regions list are:"<<endl;
-				for(int k=0;k<compatible_bids_left_companies.size();k++)
-				{
-					//cout<<"From company "<<left_out_companies[k]<<" Bids that can be taken are";
-					// for(int l=0;l<compatible_bids_left_companies[k].size();l++)
-					// {
-					// 	cout<<compatible_bids_left_companies[k][l]<<" ";
-					// }
-					//cout<<endl;
-				}
+				// for(int k=0;k<compatible_bids_left_companies.size();k++)
+				// {
+				// 	//cout<<"From company "<<left_out_companies[k]<<" Bids that can be taken are";
+				// 	// for(int l=0;l<compatible_bids_left_companies[k].size();l++)
+				// 	// {
+				// 	// 	cout<<compatible_bids_left_companies[k][l]<<" ";
+				// 	// }
+				// 	//cout<<endl;
+				// }
 				max_profit = 0;
 				vector<int> bidss;
 				//cout<<"Now I am starting the brute force"<<endl;
@@ -779,6 +793,7 @@ void next_best_neighbour()
 
 int main()
 {
+	srand(time(NULL));
 	readFile();
 	make_company_bid_list();
 	//print_company_bid_lists();
@@ -787,7 +802,11 @@ int main()
 	clock_t begin = clock();
 
 	LOOP:
+	// srand(time(NULL));
+	// readFile();
+	// make_company_bid_list();
 	make_random_start_state();
+	//print_random_start_state();
 	for (int l = 0; l < noc; l++)
 	{
 		company_bid_considered_max[l] = company_bid_considered[l];
@@ -826,6 +845,11 @@ int main()
 			company_bid_considered[l] = company_bid_considered_max[l];
 		}
 
+		for(int l=0;l<nor;l++)
+		{
+			region_bid_index[l] = region_bid_index_max[l];
+		}
+
 
 		unallotted_regions_list.resize(0);
 		for (int l = 0; l < unallotted_regions_list.size(); l++)
@@ -855,11 +879,23 @@ int main()
 	cout<<"num_of_restarts: "<<num_of_restarts<<endl;
 	cout<<"elapsed_secs: "<<elapsed_secs<<endl;
 	cout<<"per_iter_time: "<<elapsed_secs/num_of_restarts<<endl;
-	if((time_in_seconds-elapsed_secs)>((2*elapsed_secs)/num_of_restarts) )
-	{
+	cout<<"profit_in_this_run : "<<(int)pr_curr_state<<endl;
+	// if((time_in_seconds-elapsed_secs)>((2*elapsed_secs)/num_of_restarts) )
+	// {
+	// 	region_bid_index.resize(nor, -1);
+	// 	company_bid_considered.resize(noc,-1);
+	// 	company_bid_considered_max.resize(noc,-1);
+	// 	region_bid_index_max.resize(nor,-1);
+	// 	goto LOOP;
+	// }
+
+	if(num_of_restarts<50){
+			region_bid_index.resize(nor, -1);
+		company_bid_considered.resize(noc,-1);
+		company_bid_considered_max.resize(noc,-1);
+		region_bid_index_max.resize(nor,-1);
 		goto LOOP;
 	}
-
 
 	ofstream outfile;
 	outfile.open ("output.txt");
