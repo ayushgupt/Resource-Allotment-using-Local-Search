@@ -45,9 +45,9 @@ double max_profit_neighbour;
 
 
 
-vector< vector<int> > region_bid_index_neighbours;
-vector< vector<int> > company_bid_considered_neighbours;
-vector< vector<int> > unallotted_regions_list_neighbours;
+// vector< vector<int> > region_bid_index_neighbours;
+// vector< vector<int> > company_bid_considered_neighbours;
+// vector< vector<int> > unallotted_regions_list_neighbours;
 
 vector< vector<int> > compatible_bids_left_companies;
 
@@ -57,6 +57,9 @@ vector<int> bids_considered_bf_max;
 double time_in_seconds=0.0;
 vector<int> company_bid_considered_max_to_output;
 double all_time_max_profit=0;
+
+char *filename_input;
+
 bool compare(const pair<int, double>&i, const pair<int, double>&j)
 {
     return i.second > j.second;
@@ -68,7 +71,8 @@ bool compare(const pair<int, double>&i, const pair<int, double>&j)
 void readFile()
 {
 	ifstream infile;
-	infile.open("input.txt");
+	// infile.open("input.txt");
+	infile.open(filename_input);
 	string g;
 	string garbage;
 	//scanf("%f\n\n",&tim);
@@ -167,15 +171,15 @@ void print_company_bid_lists()
 		cout<<endl;
 	}
 }
-void neigh_add_bid(int neigh_id,int bid_id)
-{
-	company_bid_considered_neighbours[neigh_id][ tob[bid_id].cid ] = bid_id;
+// void neigh_add_bid(int neigh_id,int bid_id)
+// {
+// 	company_bid_considered_neighbours[neigh_id][ tob[bid_id].cid ] = bid_id;
 
-	for(int i=0;i<tob[bid_id].norc;i++)
-	{
-		region_bid_index_neighbours[neigh_id][ tob[bid_id].region[i] ]= bid_id;
-	} 
-}
+// 	for(int i=0;i<tob[bid_id].norc;i++)
+// 	{
+// 		region_bid_index_neighbours[neigh_id][ tob[bid_id].region[i] ]= bid_id;
+// 	} 
+// }
 void add_bid(int bid_id)
 {
 	company_bid_considered[ tob[bid_id].cid ] = bid_id;
@@ -185,14 +189,14 @@ void add_bid(int bid_id)
 		region_bid_index[ tob[bid_id].region[i] ]= bid_id;
 	} 
 }
-void neigh_remove_bid(int neigh_id,int bid_id)
-{
-	company_bid_considered_neighbours[neigh_id][ tob[bid_id].cid ] = -1;
-	for(int i=0;i<tob[bid_id].norc;i++)
-	{
-		region_bid_index_neighbours[neigh_id][ tob[bid_id].region[i] ]= -1;
-	}
-}
+// void neigh_remove_bid(int neigh_id,int bid_id)
+// {
+// 	company_bid_considered_neighbours[neigh_id][ tob[bid_id].cid ] = -1;
+// 	for(int i=0;i<tob[bid_id].norc;i++)
+// 	{
+// 		region_bid_index_neighbours[neigh_id][ tob[bid_id].region[i] ]= -1;
+// 	}
+// }
 void remove_bid(int bid_id)
 {
 	company_bid_considered[ tob[bid_id].cid ] = -1;
@@ -201,17 +205,17 @@ void remove_bid(int bid_id)
 		region_bid_index[ tob[bid_id].region[i] ]= -1;
 	}
 }
-void neigh_update_unallotted_regions_list(int neigh_id)
-{
-	unallotted_regions_list_neighbours[neigh_id].resize(0);
-	for(int i=0;i<nor;i++)
-	{
-		if(region_bid_index_neighbours[neigh_id][i]==-1)
-		{
-			unallotted_regions_list_neighbours[neigh_id].push_back(i);
-		}
-	}
-}
+// void neigh_update_unallotted_regions_list(int neigh_id)
+// {
+// 	unallotted_regions_list_neighbours[neigh_id].resize(0);
+// 	for(int i=0;i<nor;i++)
+// 	{
+// 		if(region_bid_index_neighbours[neigh_id][i]==-1)
+// 		{
+// 			unallotted_regions_list_neighbours[neigh_id].push_back(i);
+// 		}
+// 	}
+// }
 void update_unallotted_regions_list()
 {
 	unallotted_regions_list.resize(0);
@@ -242,7 +246,9 @@ void make_random_start_state()
 		vector<int> compatible_bids_of_this_company;
 		int num_of_bids_of_company = company_bid_list[i].size();
 		int m2 = 0;
-		int j = rand()%num_of_bids_of_company;
+		int j = 0;
+		if(num_of_bids_of_company!=0)
+			j = rand()%num_of_bids_of_company;
 		while(m2<num_of_bids_of_company){
 		// for(int j=0;j<num_of_bids_of_company;j++)
 		// {
@@ -827,10 +833,13 @@ void next_best_neighbour()
 	}
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	// cout<<argv[0]<<" "<<argv[1]<<endl;
 	srand(time(NULL));
+	filename_input = argv[1];
 	readFile();
+	// readFile();
 	make_company_bid_list();
 	// print_company_bid_lists();
 	double num_of_restarts=0;
@@ -950,7 +959,8 @@ int main()
 	}
 
 	ofstream outfile;
-	outfile.open ("output.txt");
+	outfile.open (argv[2]);
+	// outfile.open("output.txt");
 	for(int i=0;i<noc;i++)
 	{
 		if(company_bid_considered_max_to_output[i]!=-1)
