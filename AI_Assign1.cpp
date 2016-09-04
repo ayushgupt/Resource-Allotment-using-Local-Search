@@ -348,6 +348,70 @@ void make_greedy_random_start_state()
 		}
 	}
 }
+void make_random_start_state_more()
+{
+	//srand (time(NULL));
+	int i= rand() % noc;
+	//cout<<"start_random_index : "<<i<<endl;
+	vector<int> companies_left;
+	for(int z=0;z<noc;z++)
+	{
+		companies_left.push_back(z);
+	}
+	int m = 0;
+	while(m<noc){
+
+		int index=rand()%companies_left.size();
+		i=companies_left[index];
+    	companies_left.erase(companies_left.begin()+index);
+
+		update_unallotted_regions_list();
+		
+		vector<int> compatible_bids_of_this_company;
+		int num_of_bids_of_company = company_bid_list[i].size();
+		int m2 = 0;
+		int j = rand()%num_of_bids_of_company;
+		while(m2<num_of_bids_of_company){
+			//converting that array into vector
+			vector<int> bid_region_vector((tob[ company_bid_list[i][j] ].region), (tob[ company_bid_list[i][j] ].region)+(tob[ company_bid_list[i][j] ].norc));
+
+			bool bid_contained_in_unallocated=true;
+
+			vector<int> intersection_vector = vector<int> (intersection_dummy_vector, set_intersection( all(bid_region_vector), all(unallotted_regions_list), intersection_dummy_vector ));
+			int bid_region_size=bid_region_vector.size();
+			if(intersection_vector.size()!=bid_region_vector.size())
+			{
+				bid_contained_in_unallocated=false;
+			}
+			else
+			{
+				for(int k=0;k<bid_region_size;k++)
+				{
+					if(intersection_vector[k]!=bid_region_vector[k])
+					{
+						bid_contained_in_unallocated=false;
+						break;
+					}
+				}
+			}
+
+			if(bid_contained_in_unallocated)
+			{
+				compatible_bids_of_this_company.push_back(company_bid_list[i][j]);
+			}
+
+			m2++;
+			j = (j+1)%num_of_bids_of_company;
+		}
+		if(!compatible_bids_of_this_company.empty())
+		{
+			int rand_bid_index_of_compatible_vector= rand() % (compatible_bids_of_this_company.size());
+			add_bid(compatible_bids_of_this_company[rand_bid_index_of_compatible_vector]);
+		}
+		//i = (i+1)%noc;
+		m++;
+	}
+}
 
 void print_random_start_state()
 {
@@ -356,6 +420,7 @@ void print_random_start_state()
 		cout<<"FOR COMPANY "<<i<<" BID_ID OF CONSIDERED BID IS "<< company_bid_considered[i]<<endl;
 	}
 }
+
 void print_best_neighbour_state()
 {
 	for(int i=0;i<noc;i++)
@@ -847,7 +912,7 @@ int main()
 	}
 	else
 	{
-		make_random_start_state();	
+		make_random_start_state_more();	
 	}
 	//print_random_start_state();
 	//cout<<"profit of random state : "<<(int)profit_current_state()<<endl;
