@@ -141,6 +141,7 @@ void readFile()
 void make_company_bid_list()
 {
 	//builds the company_bid_list
+	company_bid_list.clear();
 	company_bid_list.resize( noc , vector<int>( 0 , -100 ));
 	for(int i=0;i<nob;i++)
 	{
@@ -219,7 +220,7 @@ void make_random_start_state()
 {
 	//srand (time(NULL));
 	int i= rand() % noc;
-	cout<<"start_random_index : "<<i<<endl;
+	//cout<<"start_random_index : "<<i<<endl;
 	int m = 0;
 	while(m<noc){
 	// for(int i=start_ind;i<noc;i++)
@@ -548,7 +549,9 @@ void next_best_neighbour()
 			vector<int> region_bid_index_temp;
 			vector<int> company_bid_considered_temp;
 			vector<int> unallotted_regions_list_temp;
+			region_bid_index_temp.clear();
 			region_bid_index_temp.resize(nor,-1);
+			company_bid_considered_temp.clear();
 			company_bid_considered_temp.resize(noc,-1);
 //			cout<<"CHECK_POINT_6"<<endl;
 			for (int l = 0; l < noc; l++)
@@ -656,6 +659,7 @@ void next_best_neighbour()
 				//cout<<"8"<<endl;
 				//initializing the 2D vector
 				compatible_bids_left_companies.resize(0);
+				compatible_bids_left_companies.clear();
 				compatible_bids_left_companies.resize(left_out_companies.size());
 				//Making the 2D vector
 				for(int k=0;k<left_out_companies.size();k++)
@@ -796,7 +800,7 @@ int main()
 	srand(time(NULL));
 	readFile();
 	make_company_bid_list();
-	//print_company_bid_lists();
+	// print_company_bid_lists();
 	double num_of_restarts=0;
 	company_bid_considered_max_to_output.resize(noc,-1);
 	clock_t begin = clock();
@@ -806,6 +810,8 @@ int main()
 	// readFile();
 	// make_company_bid_list();
 	make_random_start_state();
+	//print_random_start_state();
+	//cout<<"profit of random state : "<<(int)profit_current_state()<<endl;
 	//print_random_start_state();
 	for (int l = 0; l < noc; l++)
 	{
@@ -889,11 +895,18 @@ int main()
 	// 	goto LOOP;
 	// }
 
-	if(num_of_restarts<50){
-			region_bid_index.resize(nor, -1);
+	if((time_in_seconds-elapsed_secs)>((2*elapsed_secs)/num_of_restarts) )
+	{
+		region_bid_index.clear();
+		region_bid_index.resize(nor, -1);
+		company_bid_considered.clear();
 		company_bid_considered.resize(noc,-1);
+		company_bid_considered_max.clear();
 		company_bid_considered_max.resize(noc,-1);
+		region_bid_index_max.clear();
 		region_bid_index_max.resize(nor,-1);
+		unallotted_regions_list.resize(0);
+		unallotted_regions_list_max.resize(0);
 		goto LOOP;
 	}
 
